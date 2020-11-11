@@ -1,7 +1,7 @@
 
 #Directories
 #PC-09
-base.dir <- "/home/heyj/c010-datasets/Internal/COPD/NaturComm/ATAC/baseline"
+base.dir <- "/home/heyj/c010-datasets/Internal/COPD/NaturComm/ATAC/treatment"
 data.dir <- "/icgc/dkfzlsdf/analysis/C010/betaENaC/ATAC/BL_experiment/processing/"
 analysis.dir <- file.path(base.dir, "analysis")
 dir.create(analysis.dir, recursive=TRUE)
@@ -26,7 +26,6 @@ sample_anno <- data.frame(SampleID=c("AM_wt_rep1","AM_wt_rep2", "AM_wt_rep3",
         Peaks=NA
     )
 rownames(sample_anno)<-sample_anno$SampleID
-
 #find bam and bed files
 #bams
 bams_BL <- dir(path = file.path(data.dir), full.names = TRUE, recursive=TRUE,
@@ -49,7 +48,6 @@ sample_anno$Peaks <- beds
 #saving
 dir.create(file.path(analysis.dir,"data"),recursive=TRUE)
 saveRDS(sample_anno, file.path(analysis.dir,"data", "sample_anno.rds"))
-write.table(sample_anno, file.path(analysis.dir,"data", "sample_anno.tsv"), quote=FALSE, sep="\t", row.names=FALSE)
 
 #create dataset
 dataset <-dba(sampleSheet=sample_anno, peakCaller="macs")
@@ -82,9 +80,6 @@ saveRDS(counts_raw, file.path(analysis.dir, "allPeaks_raw.rds"))
 contrasts <- data.frame(contrasts=1:length(unlist(lapply(dataset$contrasts, function(x)x$name1))), group1=c(unlist(lapply(dataset$contrasts, function(x)x$name1))),
 group2= c(unlist(lapply(dataset$contrasts, function(x)x$name2))))
 contrasts$comparison <- paste0(contrasts$group1, "_vs_", contrasts$group2)
-#create folders
-lapply(c("Anno", "MAs", "Volcanos", "Heatmaps", "Boxplots"), function(x)dir.create(file.path(analysis.dir,x)))
-
 #write for loop to extract all possible comparisons in different plots
 DE_list <- list(NULL)
 for (i in 1:nrow(contrasts)){
@@ -137,6 +132,7 @@ for (i in 1:nrow(contrasts)){
     #make a list
     DE_list_complete[[i]]<- temp_anno_gr
     }
+    
 #order and join with counts
 counts <- sortSeqlevels(counts)
 counts <- sort(counts)
